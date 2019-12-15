@@ -77,9 +77,7 @@ def run_cmd(cmd):
 
 def saveToDb(temperature):
     timestamp=datetime.datetime.utcnow().isoformat()
-    print(temperature)
-    print(timestamp)
-    print("save now")
+
     datapoints = [
         {
             "measurement": "temperature",
@@ -89,9 +87,8 @@ def saveToDb(temperature):
             }
         }
         ]
-    bResult=client.write_points(datapoints)
-    print(bResult)
-    return bResult
+    
+    return client.write_points(datapoints)
 
 
 # wipe LCD screen before we start
@@ -104,9 +101,10 @@ line2 = ""
 
 try:
     while True:
-        temperature = sensor.get_temperature()
-        temperatureText = str(temperature)# + u"\u2103"
-        
+        temperature = 0.00#sensor.get_temperature()
+        temperatureText = str(temperature) + " " + chr(223) + "C"
+        line1 = datetime.datetime.now().strftime('%b %d  %H:%M:%S\n')
+
         # Save only each 60 seconds
         if loopCounter == 0:
             lcd.clear()
@@ -120,11 +118,10 @@ try:
             line2 = temperatureText + " Saving..."
             print("Saving " +  temperatureText)
         elif loopCounter == 61:
-            loopCounter = 0
+            loopCounter = -1
         
-        line1 = datetime.datetime.now().strftime('%b %d  %H:%M:%S\n')
-        print(line1 + line2)
-        lcd.message(line1 + line2)
+        print( str(loopCounter) + " = " + line1 + line2)
+        lcd.message = line1 + line2
         
         loopCounter += 1
         sleep(1)
