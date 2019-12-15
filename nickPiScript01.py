@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 from subprocess import Popen, PIPE
 from time import sleep
-#from datetime import datetime
 import datetime
 from w1thermsensor import W1ThermSensor
 from influxdb import InfluxDBClient
 import board
 import digitalio
 import adafruit_character_lcd.character_lcd as characterlcd
+import asyncio
 
 
 # Modify this if you have a different sized character LCD
@@ -95,13 +95,17 @@ def saveToDb(temperature):
 lcd.clear()
 lcd.message = "nickPiScript01\n " + "By nicgravel"
 sleep(2)
-
+temperature = 0.00
 loopCounter = 0
 line2 = ""
+ip = "not found"
+
 
 try:
     while True:
-        temperature = 0.00#sensor.get_temperature()
+        if loopCounter == 20 or loopCounter == 50:
+            temperature = sensor.get_temperature()
+
         temperatureText = str(temperature) + " " + chr(223) + "C"
         line1 = datetime.datetime.now().strftime('%b %d  %H:%M:%S\n')
 
@@ -120,7 +124,7 @@ try:
         elif loopCounter == 61:
             loopCounter = -1
         
-        print( str(loopCounter) + " = " + line1 + line2)
+        print( str(loopCounter) + " = " + line1 + line2 + "\n")
         lcd.message = line1 + line2
         
         loopCounter += 1
@@ -128,3 +132,4 @@ try:
 
 except KeyboardInterrupt:
     lcd.clear()
+
