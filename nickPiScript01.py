@@ -119,7 +119,7 @@ lcd.clear()
 lcd.message = "nickPiScript01\n " + "By nicgravel"
 sleep(2)
 temperature = sensor.get_temperature()
-loopCounter = 0
+loopCounter = 60
 line2 = ""
 ip = "not found"
 
@@ -132,24 +132,24 @@ try:
         line1 = datetime.datetime.now().strftime('%b %d  %H:%M:%S\n')
 
         # Save only each 60 seconds
-        if loopCounter == 0:
+        if loopCounter == 60:
             lcd.clear()
             line2 = "IP " + getIp()
-        elif loopCounter > 2 and loopCounter < 60:
-            if loopCounter == 3:
+        elif loopCounter < 58 and loopCounter > 0:
+            if loopCounter == 57:
                 lcd.clear()
-            line2 = temperatureText + "       " + str(loopCounter)
-        elif loopCounter == 60:
+            line2 = temperatureText + "       " + "{:02d}".format(loopCounter) #Display number with leading zeros
+        elif loopCounter == 0:
             saveToDb(temperature)
             line2 = temperatureText + " Saving..."
             print("Saving " +  temperatureText)
-        elif loopCounter == 61:
-            loopCounter = -1
+        elif loopCounter == -1:
+            loopCounter = 61
         
-        print( str(loopCounter) + " = " + line1 + line2 + "\n")
+        print(line1 + line2 + "\n")
         lcd.message = line1 + line2
         
-        loopCounter += 1
+        loopCounter -= 1
 
         # Getting the temperature take about one second so we don't have to sleep
         # sleep(1)
