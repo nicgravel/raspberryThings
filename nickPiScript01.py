@@ -1,7 +1,23 @@
-# sudo apt-get install python3-pip
-# sudo pip3 install adafruit-blinka
-# sudo pip3 install adafruit-circuitpython-charlcd
-# sudo pip3 install w1thermsensorss
+# Need to install dependencies 
+#   sudo apt-get install python3-pip
+#   sudo pip3 install adafruit-blinka
+#   sudo pip3 install adafruit-circuitpython-charlcd
+#   sudo pip3 install w1thermsensor
+#   sudo python3 -m pip install influxdb (influxDb should be installed and configured)
+
+# DS18B20 temperature sensor connected to GPIO4 (pin 7), 3.3v and gnd
+
+#       LCD PIN            Rasp GPIO   Rasp V.B pin
+#------------------------------------------------------
+#   LCD Pin #4  (RS)         #22        (pin 13)
+#   LCD Pin #6  (EN)         #17        (pin 11)
+#   LCD Pin #11 (D4)         #25        (pin 22)
+#   LCD Pin #12 (D5)         #24        (pin 18)
+#   LCD Pin #13 (D6)         #23        (pin 16)
+#   LCD Pin #14 (D7)         #18        (pin 12)
+#   LCD Pin #1  (GND)        GND        (pin 6 )
+#   LCD Pin #2  (5V)         5V         (pin 2 )
+
 
 # -*- coding: utf-8 -*-
 from subprocess import Popen, PIPE
