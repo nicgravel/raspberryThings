@@ -138,7 +138,7 @@ try:
         elif loopCounter > 2 and loopCounter < 60:
             if loopCounter == 3:
                 lcd.clear()
-            line2 = temperatureText
+            line2 = temperatureText + "       " + str(loopCounter)
         elif loopCounter == 60:
             saveToDb(temperature)
             line2 = temperatureText + " Saving..."
