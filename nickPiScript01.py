@@ -41,7 +41,9 @@ client = InfluxDBClient(host, port, user, password, dbname)
 
 # Initialize DS18B20 temperature prob
 sensor = W1ThermSensor()
-sensor.set_precision(9)
+
+# ONly set the precision one time for the sensor. writing is limited
+# sensor.set_precision(9, persist=True) 
 
 # looking for an active Ethernet or WiFi device
 def find_interface():
@@ -95,7 +97,7 @@ def saveToDb(temperature):
 lcd.clear()
 lcd.message = "nickPiScript01\n " + "By nicgravel"
 sleep(2)
-temperature = 0.00
+temperature = sensor.get_temperature()
 loopCounter = 0
 line2 = ""
 ip = "not found"
