@@ -1,9 +1,14 @@
+# -*- coding: utf-8 -*-
 from subprocess import Popen, PIPE
 from time import sleep
-from datetime import datetime
+#from datetime import datetime
+import datetime
+from w1thermsensor import W1ThermSensor
+from influxdb import InfluxDBClient
 import board
 import digitalio
 import adafruit_character_lcd.character_lcd as characterlcd
+
 
 # Modify this if you have a different sized character LCD
 lcd_columns = 16
@@ -22,15 +27,31 @@ lcd_d7 = digitalio.DigitalInOut(board.D18)
 lcd = characterlcd.Character_LCD_Mono(lcd_rs, lcd_en, lcd_d4, lcd_d5, lcd_d6,
                                       lcd_d7, lcd_columns, lcd_rows)
 
+
+# Set required InfluxDB parameters.
+# (this could be added to the program args instead of beeing hard coded...)
+host = "localhost" #Could also use local ip address like "192.168.1.136"
+port = 8086
+user = "pi"
+password = "pi"
+dbname = "temperature_db"
+
+# Initialize the Influxdb client
+client = InfluxDBClient(host, port, user, password, dbname)
+
+# Initialize DS18B20 temperature prob
+sensor = W1ThermSensor()
+sensor.set_precision(9)
+
 # looking for an active Ethernet or WiFi device
 def find_interface():
-    dev_name = "null"
+    device_name = "null"
     find_device = "ip addr show"
     interface_parse = run_cmd(find_device)
     for line in interface_parse.splitlines():
         if "state UP" in line:
-            dev_name = line.split(':')[1]
-    return dev_name
+            device_name = line.split(':')[1]
+    return device_name
 
 # find an active IP on the first LIVE network device
 def parse_ip(interface):
@@ -44,40 +65,68 @@ def parse_ip(interface):
             ip = ip.split('/')[0]
     return ip
 
+def getIp():
+    return parse_ip(find_interface())
+
+
 # run unix shell command, return as ASCII
 def run_cmd(cmd):
     p = Popen(cmd, shell=True, stdout=PIPE)
     output = p.communicate()[0]
     return output.decode('ascii')
 
-def show_ip(ip_address):
-    lcd_line_1 = datetime.now().strftime('%b %d  %H:%M:%S\n')
-    lcd_line_2 = "IP " + ip_address
-    lcd.message = lcd_line_1 + lcd_line_2
+def saveToDb(temperature):
+    timestamp=datetime.datetime.utcnow().isoformat()
+    print(temperature)
+    print(timestamp)
+    print("save now")
+    datapoints = [
+        {
+            "measurement": "temperature",
+            "time": timestamp,
+            "fields": {
+                "value": temperature
+            }
+        }
+        ]
+    bResult=client.write_points(datapoints)
+    print(bResult)
+    return bResult
 
-def show_temp():
-    lcd.clear()
-    lcd.message("Temp")
 
 # wipe LCD screen before we start
-bootMsg = "nickPiScript01\n " + "By nicgravel"
 lcd.clear()
-lcd.message = bootMsg
-print(bootMsg)
+lcd.message = "nickPiScript01\n " + "By nicgravel"
 sleep(2)
-curIp = parse_ip(find_interface())
-show_ip(curIp)
 
-cntLan = 0
-cntShowIp = 0
+loopCounter = 0
+line2 = ""
 
 try:
     while True:
-        latestIp = parse_ip(find_interface())
-        #if latestIp != curIp and cntLan > 0:
-
-        show_ip(latestIp)
-
+        temperature = sensor.get_temperature()
+        temperatureText = str(temperature)# + u"\u2103"
+        
+        # Save only each 60 seconds
+        if loopCounter == 0:
+            lcd.clear()
+            line2 = "IP " + getIp()
+        elif loopCounter > 2 and loopCounter < 60:
+            if loopCounter == 3:
+                lcd.clear()
+            line2 = temperatureText
+        elif loopCounter == 60:
+            saveToDb(temperature)
+            line2 = temperatureText + " Saving..."
+            print("Saving " +  temperatureText)
+        elif loopCounter == 61:
+            loopCounter = 0
+        
+        line1 = datetime.datetime.now().strftime('%b %d  %H:%M:%S\n')
+        print(line1 + line2)
+        lcd.message(line1 + line2)
+        
+        loopCounter += 1
         sleep(1)
 
 except KeyboardInterrupt:
