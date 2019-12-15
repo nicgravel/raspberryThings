@@ -1,3 +1,8 @@
+# sudo apt-get install python3-pip
+# sudo pip3 install adafruit-blinka
+# sudo pip3 install adafruit-circuitpython-charlcd
+# sudo pip3 install w1thermsensorss
+
 # -*- coding: utf-8 -*-
 from subprocess import Popen, PIPE
 from time import sleep
@@ -105,8 +110,7 @@ ip = "not found"
 
 try:
     while True:
-        if loopCounter == 20 or loopCounter == 50:
-            temperature = sensor.get_temperature()
+        temperature = sensor.get_temperature()
 
         temperatureText = str(temperature) + " " + chr(223) + "C"
         line1 = datetime.datetime.now().strftime('%b %d  %H:%M:%S\n')
@@ -130,7 +134,9 @@ try:
         lcd.message = line1 + line2
         
         loopCounter += 1
-        sleep(1)
+
+        # Getting the temperature take about one second so we don't have to sleep
+        # sleep(1)
 
 except KeyboardInterrupt:
     lcd.clear()
